@@ -1,5 +1,9 @@
 package org.bergman.agentic.demo;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -19,7 +23,7 @@ public class SOChatAgentEmbabel {
 			"""
 			Find relevant questions (topics) in the graph based on vector search on the question the user asked (the prompt)
 			""")
-	public Object findRelevantQuestions(
+	public List<Map<String, Object>> findRelevantQuestions(
 			@ToolParam(description = "The question as asked by the user") String userQuestion
 			) throws Exception {
 		return neo4j.getRelevantQuestions(userQuestion);
@@ -30,7 +34,7 @@ public class SOChatAgentEmbabel {
 			For a specific question (topic), get all posts in that thread (the question itself and all answers).
 			The result is unsorted, but there is a created field with when it was posted.
 			""")
-	public Object retrieveThread(
+	public List<Map<String, Object>> retrieveThread(
 			@ToolParam(description = "The id of the question/topic to get the thread for") String questionId
 			) throws Exception {
 		return neo4j.getThread(questionId);
@@ -41,12 +45,12 @@ public class SOChatAgentEmbabel {
 			For a specific question (topic), get the answer that has been indicated as the accepted answer
 			(if there is one, otherwise it returns a string that says 'No accepted answer')
 			""")
-	public Object retrieveAcceptedAnswer(
+	public Map<String, Object> retrieveAcceptedAnswer(
 			@ToolParam(description = "The id of the question/topic to get the accepted answer for") String questionId
 			) throws Exception {
 		var result = neo4j.getAcceptedAnswer(questionId);
 		if (result == null) {
-			return "No accepted answer";
+			return new HashMap<>();
 		}
 		return result;
 	}
@@ -56,7 +60,7 @@ public class SOChatAgentEmbabel {
 			Fetch all comments for a specific post (question or answer).
 			This may be an empty list if there are no comments.
 			""")
-	public Object retrieveComments(
+	public List<Map<String, Object>> retrieveComments(
 			@ToolParam(description = "The id of the post to get the comments for") String postId
 			) throws Exception {
 		return neo4j.getComments(postId);
@@ -66,7 +70,7 @@ public class SOChatAgentEmbabel {
 			"""
 			Get the user that posted a question, an answer or a comment.
 			""")
-	public Object getUser(
+	public Map<String, Object> getUser(
 			@ToolParam(description = "The id of the post (question or answer) or comment for which to get the user who posted.") String entityId
 			) throws Exception {
 		return neo4j.getUser(entityId);
@@ -76,7 +80,7 @@ public class SOChatAgentEmbabel {
 			"""
 			Get all posts (questions and answers) posted by a specific user.
 			""")
-	public Object getUserPosts(
+	public List<Map<String, Object>> getUserPosts(
 			@ToolParam(description = "The user id to get the posted posts for.") String userId
 			) throws Exception {
 		return neo4j.getUserPosts(userId);
@@ -86,7 +90,7 @@ public class SOChatAgentEmbabel {
 			"""
 			Get all comments posted by a specific user.
 			""")
-	public Object getUserComments(
+	public List<Map<String, Object>> getUserComments(
 			@ToolParam(description = "The user id to get the posted comments for.") String userId
 			) throws Exception {
 		return neo4j.getUserComments(userId);
@@ -97,12 +101,12 @@ public class SOChatAgentEmbabel {
 			Get the post that an answer or a comment was posted on.
 			If there is no parent (i.e. the post was a question) it return the string 'No parent'
 			""")
-	public Object getParentPost(
+	public Map<String, Object> getParentPost(
 			@ToolParam(description = "The id of the post (answer) or comment") String entityId
 			) throws Exception {
 		var result = neo4j.getParentPost(entityId);
 		if (result == null) {
-			return "No parent";
+			return new HashMap<>();
 		}
 		return result;
 	}
