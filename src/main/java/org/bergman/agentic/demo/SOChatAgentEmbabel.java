@@ -6,17 +6,23 @@ import java.util.Map;
 
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.stereotype.Component;
+import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
+
+import com.embabel.agent.api.common.Ai;
+import com.embabel.common.ai.model.LlmOptions;
 
 /**
  * Implementation of the tools for our agent, tools that all delegate directly to Cypher and Neo4j
  */
-@Component
+@ShellComponent
 public class SOChatAgentEmbabel {
 	private final Neo4jConnection neo4j;
+	private final Ai ai;
 
-	protected SOChatAgentEmbabel(Neo4jConnection neo4j) {
+	protected SOChatAgentEmbabel(Neo4jConnection neo4j, Ai ai) {
 		this.neo4j = neo4j;
+		this.ai = ai;
 	}
 	
 	@Tool(description = 
@@ -110,4 +116,19 @@ public class SOChatAgentEmbabel {
 		}
 		return result;
 	}
+	
+	@ShellMethod
+    public String answer(String userQuestion) {
+        return ai
+                .withLlm(LlmOptions.withDefaultLlm().withTemperature(.8))
+                .withToolObject(this)
+                .generateText(
+                		"""
+                		You are assisting a development team with questions on their specific development environment.
+                		For this you have a graph which is an export from Stack Overflow for teams. It has posts and comments on those posts.
+                		The original post is usually a question, and the other posts are answers on that question.
+                		All posts and comments has a link to the user that posted them. The question is:
+                		""" + userQuestion
+                		);
+    }
 }
